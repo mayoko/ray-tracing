@@ -6,22 +6,28 @@ use vec3::{Vec3, Point3, unit_vector, dot};
 use color::Color;
 use ray::Ray;
 
-fn hit_sphere(center: &Point3, radius: f32, r: &Ray) -> bool {
+fn hit_sphere(center: &Point3, radius: f32, r: &Ray) -> f32 {
     let oc = r.origin() - center;
-    let a = dot(&r.direction(), &r.direction());
-    let b = 2.0 * dot(&oc, &r.direction());
-    let c = dot(&oc, &oc) - radius * radius;
-    let discriminant = b*b - 4.0*a*c;
-    discriminant > 0.0
+    let a = r.direction().length_squared();
+    let half_b = dot(&oc, &r.direction());
+    let c = oc.length_squared() - radius * radius;
+    let discriminant = half_b*half_b - 4.0*a*c;
+    if discriminant < 0.0 {
+        -1.0
+    } else {
+        (-half_b - discriminant.sqrt()) / a
+    }
 }
 
 fn ray_color(r: &Ray) -> Color {
-    if hit_sphere(&Point3::new(0.0, 0.0, -1.0), 0.5, &r) {
-        return Color::new(1.0, 0.0, 0.0);
+    let t = hit_sphere(&Point3::new(0.0, 0.0, -1.0), 0.5, &r);
+    if t > 0.0 {
+        let n = unit_vector(&(r.at(t) - Point3::new(0.0, 0.0, -1.0)));
+        return 0.5 * Color::new(n.x() + 1.0, n.y() + 1.0, n.z() + 1.0);
     }
     let unit_direction = unit_vector(&r.direction());
-    let t = 0.5*(unit_direction.y() + 1f32);
-    (1f32 - t) * Color::new(1f32, 1f32, 1f32) + t * Color::new(0.5f32, 0.7f32, 1f32)
+    let t = 0.5*(unit_direction.y() + 1.0);
+    (1.0 - t) * Color::new(1.0, 1.0, 1.0) + t * Color::new(0.5, 0.7, 1.0)
 }
 
 fn main() {
