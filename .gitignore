@@ -1,2 +1,3 @@
 cpp/a.out
 rust/target
+**/image.ppm
