@@ -1,4 +1,5 @@
 use std::ops;
+use rand::{thread_rng, Rng};
 
 #[derive(PartialEq, Copy, Clone, Default)]
 pub struct Vec3 {
@@ -10,6 +11,7 @@ pub struct Vec3 {
 pub type Point3 = Vec3;
 
 impl Vec3 {
+    // methods
     pub fn x(&self) -> f32 {
         return self.x;
     }
@@ -27,8 +29,17 @@ impl Vec3 {
         self.x * self.x + self.y * self.y + self.z * self.z
     }
 
+    // static methods
     pub fn new(e0: f32, e1: f32, e2: f32) -> Self {
         Vec3 { x: e0, y: e1, z: e2 }
+    }
+    pub fn random() -> Self {
+        let mut rng = thread_rng();
+        Vec3 { x: rng.gen_range(-1.0..1.0), y: rng.gen_range(-1.0..1.0), z: rng.gen_range(-1.0..1.0) }
+    }
+    pub fn random_range(min: f32, max: f32) -> Self {
+        let mut rng = thread_rng();
+        Vec3 { x: rng.gen_range(min..max), y: rng.gen_range(min..max), z: rng.gen_range(min..max) }
     }
 }
 
@@ -46,6 +57,15 @@ pub fn cross(u: &Vec3, v: &Vec3) -> Vec3 {
 
 pub fn unit_vector(u: &Vec3) -> Vec3 {
     *u / u.length()
+}
+
+pub fn random_in_unit_sphere() -> Vec3 {
+    loop {
+        let p = Vec3::random();
+        if p.length_squared() < 1. {
+            return p;
+        }
+    }
 }
 
 impl ops::Add<Vec3> for Vec3 {

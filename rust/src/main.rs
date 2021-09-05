@@ -9,19 +9,25 @@ mod camera;
 
 use rand::Rng;
 
-use vec3::{Vec3, Point3, unit_vector, dot};
+use vec3::{Vec3, Point3, unit_vector, random_in_unit_sphere};
 use color::{Color, scale_color_by_samples};
 use ray::Ray;
 use hittable::{Hittable, HitRecord};
 use hittable_list::HittableList;
 use sphere::Sphere;
-use utils::{PI, INFINITY, degrees_to_radians};
+use utils::{INFINITY};
 use camera::Camera;
 
-fn ray_color(r: &Ray, world: &dyn Hittable) -> Color {
+fn ray_color(r: &Ray, world: &dyn Hittable, depth: u32) -> Color {
     let mut rec: HitRecord = Default::default();
-    if world.hit(&r, 0.0, INFINITY, &mut rec) {
-        return 0.5 * (rec.normal + Color::new(1.0, 1.0, 1.0));
+
+    if depth <= 0 {
+        return Color::new(0., 0., 0.);
+    }
+
+    if world.hit(&r, 0.001, INFINITY, &mut rec) {
+        let target = rec.p + rec.normal + random_in_unit_sphere();
+        return 0.5 * ray_color(&Ray::new(&rec.p, &(target - rec.p)), world, depth-1);
     }
     let unit_direction = unit_vector(&r.direction());
     let t = 0.5*(unit_direction.y() + 1.0);
@@ -34,6 +40,7 @@ fn main() {
     let image_width = 400;
     let image_height = (image_width as f32 / aspect_ratio) as i32;
     let samples_per_pixel: u32 = 100;
+    let max_depth = 50;
 
     // World
     let mut world: HittableList = Default::default();
@@ -56,7 +63,7 @@ fn main() {
                 let u = (i as f32 + rng.gen_range(0.0..1.0)) / (image_width-1) as f32;
                 let v = (j as f32 + rng.gen_range(0.0..1.0)) / (image_height-1) as f32;
                 let r = camera.get_ray(u, v);
-                pixel_color_sum += ray_color(&r, &world);
+                pixel_color_sum += ray_color(&r, &world, max_depth);
             }
             println!("{}", scale_color_by_samples(&pixel_color_sum, samples_per_pixel));
         }

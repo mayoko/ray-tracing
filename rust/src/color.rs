@@ -12,9 +12,9 @@ impl fmt::Display for Color {
 
 pub fn scale_color_by_samples(color: &Color, samples_per_pixel: u32) -> Color {
     let scale = 1.0 / samples_per_pixel as f32;
-    let r = clamp(color.x() * scale, 0.0, 0.999);
-    let g = clamp(color.y() * scale, 0.0, 0.999);
-    let b = clamp(color.z() * scale, 0.0, 0.999);
+    let r = clamp((color.x() * scale).sqrt(), 0.0, 0.999);
+    let g = clamp((color.y() * scale).sqrt(), 0.0, 0.999);
+    let b = clamp((color.z() * scale).sqrt(), 0.0, 0.999);
 
     Color::new(r, g, b)
 }
