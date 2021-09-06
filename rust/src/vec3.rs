@@ -28,6 +28,10 @@ impl Vec3 {
     pub fn length_squared(&self) -> f32 {
         self.x * self.x + self.y * self.y + self.z * self.z
     }
+    pub fn near_zero(&self) -> bool {
+        let eps = 1e-8;
+        self.x.abs() < eps && self.y.abs() < eps && self.z.abs() < eps
+    }
 
     // static methods
     pub fn new(e0: f32, e1: f32, e2: f32) -> Self {
@@ -66,6 +70,14 @@ pub fn random_in_unit_sphere() -> Vec3 {
             return p;
         }
     }
+}
+
+pub fn random_unit_vector() -> Vec3 {
+    unit_vector(&random_in_unit_sphere())
+}
+
+pub fn reflect(v: &Vec3, n: &Vec3) -> Vec3 {
+    *v - 2.0*dot(v, n) * *n
 }
 
 impl ops::Add<Vec3> for Vec3 {
@@ -142,6 +154,14 @@ impl ops::Index<usize> for Vec3 {
             2 => &self.z,
             _ => panic!("index out of range")
         }
+    }
+}
+
+impl ops::Mul<Vec3> for Vec3 {
+    type Output = Vec3;
+
+    fn mul(self, _rhs: Vec3) -> Vec3 {
+        Vec3 { x: self.x *_rhs.x(), y: self.y * _rhs.y(), z: self.z * _rhs.z() }
     }
 }
 
