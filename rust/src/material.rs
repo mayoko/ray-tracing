@@ -1,7 +1,7 @@
 use crate::ray::Ray;
 use crate::hittable::HitRecord;
 use crate::color::Color;
-use crate::vec3::{random_unit_vector, reflect, unit_vector, dot};
+use crate::vec3::{random_unit_vector, reflect, unit_vector, dot, random_in_unit_sphere};
 
 pub trait Material: CloneMaterial {
     fn scatter(&self, r_in: &Ray, rec: &HitRecord, attenuation: &mut Color, scattered: &mut Ray) -> bool;
@@ -15,6 +15,7 @@ pub struct Lambertian {
 #[derive(Clone)]
 pub struct Metal {
     albedo: Color,
+    fuzz: f32,
 }
 
 impl Lambertian {
@@ -38,15 +39,15 @@ impl Material for Lambertian {
 }
 
 impl Metal {
-    pub fn new(a: &Color) -> Self {
-        Metal { albedo: *a }
+    pub fn new(a: &Color, f: f32) -> Self {
+        Metal { albedo: *a, fuzz: if f < 1.0 { f } else { 1.0 } }
     }
 }
 
 impl Material for Metal {
     fn scatter(&self, r_in: &Ray, rec: &HitRecord, attenuation: &mut Color, scattered: &mut Ray) -> bool {
         let reflected = reflect(&unit_vector(&r_in.direction()), &rec.normal);
-        *scattered = Ray::new(&rec.p, &reflected);
+        *scattered = Ray::new(&rec.p, &(reflected + self.fuzz*random_in_unit_sphere()));
         *attenuation = self.albedo;
         dot(&scattered.direction(), &rec.normal) > 0.0
     }
