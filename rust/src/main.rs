@@ -50,12 +50,13 @@ fn main() {
     let mut world: HittableList = Default::default();
 
     let material_ground = Some(Box::new(Lambertian::new(&Color::new(0.8, 0.8, 0.0))) as Box<dyn Material>);
-    let material_center = Some(Box::new(Dielectric::new(1.5)) as Box<dyn Material>);
+    let material_center = Some(Box::new(Lambertian::new(&Color::new(0.1, 0.2, 0.5))) as Box<dyn Material>);
     let material_left = Some(Box::new(Dielectric::new(1.5)) as Box<dyn Material>);
-    let material_right = Some(Box::new(Metal::new(&Color::new(0.8, 0.6, 0.2), 1.0)) as Box<dyn Material>);
+    let material_right = Some(Box::new(Metal::new(&Color::new(0.8, 0.6, 0.2), 0.2)) as Box<dyn Material>);
 
     world.add(Box::new(Sphere::new(&Point3::new(0.0, -100.5, -1.0), 100.0, &material_ground)));
     world.add(Box::new(Sphere::new(&Point3::new(0.0, 0.0, -1.0), 0.5, &material_center)));
+    world.add(Box::new(Sphere::new(&Point3::new(-1.0, 0.0, -1.0), -0.4, &material_left)));
     world.add(Box::new(Sphere::new(&Point3::new(-1.0, 0.0, -1.0), 0.5, &material_left)));
     world.add(Box::new(Sphere::new(&Point3::new(1.0, 0.0, -1.0), 0.5, &material_right)));
 
