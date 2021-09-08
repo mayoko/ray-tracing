@@ -10,28 +10,25 @@ mod material;
 
 use rand::Rng;
 
-use vec3::{Vec3, Point3, unit_vector, random_unit_vector};
+use vec3::{Point3, unit_vector};
 use color::{Color, scale_color_by_samples};
 use ray::Ray;
-use hittable::{Hittable, HitRecord};
+use hittable::{Hittable};
 use hittable_list::HittableList;
 use sphere::Sphere;
 use utils::{INFINITY};
 use camera::Camera;
-use material::{Material, Lambertian, Metal};
+use material::{Material, Lambertian, Metal, Dielectric};
 
 fn ray_color(r: &Ray, world: &dyn Hittable, depth: u32) -> Color {
-    let mut rec: HitRecord = Default::default();
-
     if depth <= 0 {
         return Color::new(0., 0., 0.);
     }
 
-    if world.hit(&r, 0.001, INFINITY, &mut rec) {
-        let mut scattered: Ray = Default::default();
-        let mut attenuation: Color = Default::default();
+    if let Some(rec) = world.hit(&r, 0.001, INFINITY) {
         let mat = rec.clone().mat.unwrap();
-        if mat.scatter(&r, &rec, &mut attenuation, &mut scattered) {
+        let (success, attenuation, scattered) = mat.scatter(&r, &rec);
+        if success {
             return attenuation * ray_color(&scattered, world, depth-1);
         }
         return Color::new(0., 0., 0.);
@@ -53,8 +50,8 @@ fn main() {
     let mut world: HittableList = Default::default();
 
     let material_ground = Some(Box::new(Lambertian::new(&Color::new(0.8, 0.8, 0.0))) as Box<dyn Material>);
-    let material_center = Some(Box::new(Lambertian::new(&Color::new(0.7, 0.3, 0.3))) as Box<dyn Material>);
-    let material_left = Some(Box::new(Metal::new(&Color::new(0.8, 0.8, 0.8), 0.3)) as Box<dyn Material>);
+    let material_center = Some(Box::new(Dielectric::new(1.5)) as Box<dyn Material>);
+    let material_left = Some(Box::new(Dielectric::new(1.5)) as Box<dyn Material>);
     let material_right = Some(Box::new(Metal::new(&Color::new(0.8, 0.6, 0.2), 1.0)) as Box<dyn Material>);
 
     world.add(Box::new(Sphere::new(&Point3::new(0.0, -100.5, -1.0), 100.0, &material_ground)));

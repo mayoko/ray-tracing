@@ -1,7 +1,7 @@
 use std::ops;
 use rand::{thread_rng, Rng};
 
-#[derive(PartialEq, Copy, Clone, Default)]
+#[derive(PartialEq, Copy, Clone, Default, Debug)]
 pub struct Vec3 {
     x: f32,
     y: f32,
@@ -48,7 +48,7 @@ impl Vec3 {
 }
 
 pub fn dot(u: &Vec3, v: &Vec3) -> f32 {
-    u[0] * v[0] + u[1] * v[1] + u[2] * v[2]
+    u.x * v.x + u.y * v.y + u.z * v.z
 }
 
 pub fn cross(u: &Vec3, v: &Vec3) -> Vec3 {
