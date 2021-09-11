@@ -16,7 +16,7 @@ use ray::Ray;
 use hittable::{Hittable};
 use hittable_list::HittableList;
 use sphere::Sphere;
-use utils::{INFINITY};
+use utils::{INFINITY, PI};
 use camera::Camera;
 use material::{Material, Lambertian, Metal, Dielectric};
 
@@ -26,7 +26,7 @@ fn ray_color(r: &Ray, world: &dyn Hittable, depth: u32) -> Color {
     }
 
     if let Some(rec) = world.hit(&r, 0.001, INFINITY) {
-        let mat = rec.clone().mat.unwrap();
+        let mat = rec.clone().mat;
         let (success, attenuation, scattered) = mat.scatter(&r, &rec);
         if success {
             return attenuation * ray_color(&scattered, world, depth-1);
@@ -47,21 +47,17 @@ fn main() {
     let max_depth = 50;
 
     // World
+    let R = (PI/4.0).cos();
     let mut world: HittableList = Default::default();
 
-    let material_ground = Some(Box::new(Lambertian::new(&Color::new(0.8, 0.8, 0.0))) as Box<dyn Material>);
-    let material_center = Some(Box::new(Lambertian::new(&Color::new(0.1, 0.2, 0.5))) as Box<dyn Material>);
-    let material_left = Some(Box::new(Dielectric::new(1.5)) as Box<dyn Material>);
-    let material_right = Some(Box::new(Metal::new(&Color::new(0.8, 0.6, 0.2), 0.2)) as Box<dyn Material>);
+    let material_left = Box::new(Lambertian::new(&Color::new(0., 0., 1.))) as Box<dyn Material>;
+    let material_right = Box::new(Lambertian::new(&Color::new(1., 0., 0.))) as Box<dyn Material>;
 
-    world.add(Box::new(Sphere::new(&Point3::new(0.0, -100.5, -1.0), 100.0, &material_ground)));
-    world.add(Box::new(Sphere::new(&Point3::new(0.0, 0.0, -1.0), 0.5, &material_center)));
-    world.add(Box::new(Sphere::new(&Point3::new(-1.0, 0.0, -1.0), -0.4, &material_left)));
-    world.add(Box::new(Sphere::new(&Point3::new(-1.0, 0.0, -1.0), 0.5, &material_left)));
-    world.add(Box::new(Sphere::new(&Point3::new(1.0, 0.0, -1.0), 0.5, &material_right)));
+    world.add(Box::new(Sphere::new(&Point3::new(-R, 0.0, -1.), R, &material_left)));
+    world.add(Box::new(Sphere::new(&Point3::new(R, 0.0, -1.), R, &material_right)));
 
     // Camera
-    let camera = Camera::new();
+    let camera = Camera::new(90.0, aspect_ratio);
 
     // Render
     println!("P3\n{} {}\n255", image_width, image_height);

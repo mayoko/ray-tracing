@@ -6,11 +6,11 @@ use crate::material::Material;
 pub struct Sphere {
     center: Point3,
     radius: f32,
-    mat: Option<Box<dyn Material>>,
+    mat: Box<dyn Material>,
 }
 
 impl Sphere {
-    pub fn new(cen: &Point3, r: f32, m: &Option<Box<dyn Material>>) -> Self {
+    pub fn new(cen: &Point3, r: f32, m: &Box<dyn Material>) -> Self {
         Sphere { center: *cen, radius: r, mat: m.clone() }
     }
 }
@@ -36,14 +36,9 @@ impl Hittable for Sphere {
             }
         }
 
-        let mut rec: HitRecord = Default::default();
+        let p = r.at(root);
+        let outward_normal = (p - self.center) / self.radius;
 
-        rec.t = root;
-        rec.p = r.at(root);
-        let outward_normal = (rec.p - self.center) / self.radius;
-        rec.set_face_normal(&r, &outward_normal);
-        rec.mat = self.mat.clone();
-
-        Some(rec)
+        Some(HitRecord::new(&p, &outward_normal, &self.mat, root, &r.direction()))
     }
 }
