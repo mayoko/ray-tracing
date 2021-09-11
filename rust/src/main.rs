@@ -10,7 +10,7 @@ mod material;
 
 use rand::Rng;
 
-use vec3::{Point3, unit_vector};
+use vec3::{Vec3, Point3, unit_vector};
 use color::{Color, scale_color_by_samples};
 use ray::Ray;
 use hittable::{Hittable};
@@ -47,17 +47,21 @@ fn main() {
     let max_depth = 50;
 
     // World
-    let R = (PI/4.0).cos();
     let mut world: HittableList = Default::default();
 
-    let material_left = Box::new(Lambertian::new(&Color::new(0., 0., 1.))) as Box<dyn Material>;
-    let material_right = Box::new(Lambertian::new(&Color::new(1., 0., 0.))) as Box<dyn Material>;
+    let material_ground = Box::new(Lambertian::new(&Color::new(0.8, 0.8, 0.))) as Box<dyn Material>;
+    let material_center = Box::new(Lambertian::new(&Color::new(0.1, 0.2, 0.5))) as Box<dyn Material>;
+    let material_left = Box::new(Dielectric::new(1.5)) as Box<dyn Material>;
+    let material_right = Box::new(Metal::new(&Color::new(0.8, 0.6, 0.2), 0.0)) as Box<dyn Material>;
 
-    world.add(Box::new(Sphere::new(&Point3::new(-R, 0.0, -1.), R, &material_left)));
-    world.add(Box::new(Sphere::new(&Point3::new(R, 0.0, -1.), R, &material_right)));
+    world.add(Box::new(Sphere::new(&Point3::new(0.0, -100.5, -1.), 100.0, &material_ground)));
+    world.add(Box::new(Sphere::new(&Point3::new(0.0, 0.0, -1.), 0.5, &material_center)));
+    world.add(Box::new(Sphere::new(&Point3::new(-1.0, 0.0, -1.), 0.5, &material_left)));
+    world.add(Box::new(Sphere::new(&Point3::new(-1.0, 0.0, -1.), -0.45, &material_left)));
+    world.add(Box::new(Sphere::new(&Point3::new(1.0, 0.0, -1.), 0.5, &material_right)));
 
     // Camera
-    let camera = Camera::new(90.0, aspect_ratio);
+    let camera = Camera::new(&Point3::new(-2., 2., 1.), &Point3::new(0., 0., -1.), &Vec3::new(0., 1., 0.), 20.0, aspect_ratio);
 
     // Render
     println!("P3\n{} {}\n255", image_width, image_height);
